@@ -1,75 +1,118 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
+import Greeting from "../../components/Greeting";
+import { fetchWeather } from "../../utils/weather";
+import { useEffect, useState } from "react";
+import StyledCard from "../../components/StyleCard";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+interface WeatherData {
+  temp: number;
+  condition: string;
+  icon: string;
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+export default function Home() {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [useCelsius, setUseCelsius] = useState(true);
+  const [energyUsage, setEnergyUsage] = useState<number>(0);
+
+  useEffect(() => {
+    fetchWeather().then((data) => setWeather(data));
+
+    // Generate random energy usage between 10–25 kWh
+    const usage = (Math.random() * 15 + 10).toFixed(1);
+    setEnergyUsage(parseFloat(usage));
+  }, []);
+
+  const convertToF = (tempC: number) => (tempC * 9) / 5 + 32;
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: "#0A0A0A", padding: 20 }}>
+      {/* Greeting + Profile */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
+        <Greeting name="Suraj" />
+        <Image
+          source={{ uri: "https://avatars.githubusercontent.com/u/63226621?s=96&v=4" }}
+          style={{ width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: "#E23744" }}
+        />
+      </View>
+
+      {/* Weather */}
+      {weather && (
+        <StyledCard
+          title="Weather"
+          right={
+            <TouchableOpacity onPress={() => setUseCelsius(!useCelsius)}>
+              <Text style={{ color: "#E23744", fontWeight: "bold" }}>
+                °{useCelsius ? "F" : "C"}
+              </Text>
+            </TouchableOpacity>
+          }
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
+              style={{ width: 52, height: 52, marginRight: 12 }}
+            />
+            <View>
+              <Text style={{ color: "#FFF", fontSize: 20 }}>
+                {useCelsius
+                  ? `${weather.temp.toFixed(1)}°C`
+                  : `${convertToF(weather.temp).toFixed(1)}°F`}
+              </Text>
+              <Text style={{ color: "#BBB", fontSize: 15 }}>
+                {weather.condition}
+              </Text>
+            </View>
+          </View>
+        </StyledCard>
+      )}
+
+      {/* Energy Usage */}
+      <StyledCard title="Energy Usage">
+        <Text style={{ color: "#E23744", fontSize: 18, fontWeight: "600" }}>
+          Today: {energyUsage} kWh
+        </Text>
+        <Text style={{ color: "#888", fontSize: 14, marginTop: 4 }}>
+          Compared to yesterday: -2.3%
+        </Text>
+      </StyledCard>
+
+      {/* Quick Actions */}
+      <StyledCard title="Quick Actions">
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: "black",
+              padding: 14,
+              borderRadius: 16,
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "#FFF", fontWeight: "bold" }}>Add Device</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#1F1F1F",
+              padding: 14,
+              borderRadius: 16,
+              flex: 1,
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "white",
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>Scenes</Text>
+          </TouchableOpacity>
+        </View>
+      </StyledCard>
+    </ScrollView>
+  );
+}
