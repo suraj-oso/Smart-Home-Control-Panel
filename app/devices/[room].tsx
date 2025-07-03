@@ -1,9 +1,11 @@
-import { useLocalSearchParams } from "expo-router";
-import { View, Text, FlatList } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { useDeviceStore } from "../../store/deviceStore";
 import DeviceCard from "../../components/DeviceCard";
+import { Ionicons } from "@expo/vector-icons"; 
 
 export default function DevicesScreen() {
+  const router = useRouter();
   const { room } = useLocalSearchParams();
   const selectedRoom = typeof room === "string" ? room : "Living Room";
 
@@ -14,26 +16,36 @@ export default function DevicesScreen() {
       <View
         style={{
           paddingHorizontal: 20,
-          paddingTop: 20,
+          paddingTop: 80,
           paddingBottom: 20,
           backgroundColor: "#1A1A1A",
           borderBottomWidth: 1,
           borderBottomColor: "#333",
+          flexDirection: "row",
+          alignItems: "center",
         }}
       >
-        <Text
-          style={{
-            color: "white",
-            fontSize: 28,
-            fontWeight: "bold",
-            marginBottom: 4,
-          }}
-        >
-          {selectedRoom}
-        </Text>
-        <Text style={{ color: "white", fontSize: 16 }}>
-          Manage devices in this room
-        </Text>
+        {/* Back Button */}
+        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+
+        {/* Room Title and Subtitle */}
+        <View>
+          <Text
+            style={{
+              color: "white",
+              fontSize: 28,
+              fontWeight: "bold",
+              marginBottom: 4,
+            }}
+          >
+            {selectedRoom}
+          </Text>
+          <Text style={{ color: "white", fontSize: 16 }}>
+            Manage devices in this room
+          </Text>
+        </View>
       </View>
 
       <FlatList
